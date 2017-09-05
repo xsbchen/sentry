@@ -101,12 +101,11 @@ def js_lint(file_list=None):
         echo('!! Skipping JavaScript linting because eslint is not installed.')
         return False
 
-    eslint_config = os.path.join(project_root, '.eslintrc')
     js_file_list = get_js_files(file_list)
 
     has_errors = False
     if js_file_list:
-        status = Popen([eslint_path, '--config', eslint_config, '--ext', '.jsx', '--fix']
+        status = Popen([eslint_path, '--ext', '.js,.jsx', '--fix']
                        + js_file_list).wait()
         has_errors = status != 0
 
