@@ -1,21 +1,19 @@
 import GroupingStore from 'app/stores/groupingStore';
 import {Client} from 'app/api';
 
-jest.mock('app/api');
-
-/*
-expect.extend({
-  toHaveBeenLastCalledWithMatch(received, arg) {
-    console.log(this, received, arg);
-  }
-});
- */
-
 describe('Grouping Store', function() {
   let trigger;
+
+  beforeAll(function() {
+    Client.mockAsync = true;
+  });
+
+  afterAll(function() {
+    Client.mockAsync = false;
+  });
+
   beforeEach(function() {
     trigger = jest.spyOn(GroupingStore, 'trigger');
-    // this.sandbox = sinon.sandbox.create();
     Client.clearMockResponses();
     Client.addMockResponse({
       url: '/issues/groupId/hashes/',
@@ -300,7 +298,20 @@ describe('Grouping Store', function() {
       afterEach(function() {});
 
       it('disables rows to be merged', async function() {
+        trigger.mockReset();
         GroupingStore.onToggleMerge('1');
+        mergeList.add('1');
+        mergeState.set('1', {checked: true});
+
+        expect(trigger).toHaveBeenLastCalledWith({
+          mergeDisabled: false,
+          mergeList,
+          mergeState
+        });
+
+        trigger.mockReset();
+
+        // Everything is sync so trigger will have been called multiple times
         let promise = GroupingStore.onMerge({
           params: {
             orgId: 'orgId',
@@ -309,8 +320,7 @@ describe('Grouping Store', function() {
           }
         });
 
-        mergeList.add('1');
-        mergeState.set('1', {checked: true, busy: false});
+        mergeState.set('1', {checked: false, busy: true});
 
         expect(trigger).toHaveBeenCalledWith({
           mergeDisabled: true,
@@ -334,6 +344,8 @@ describe('Grouping Store', function() {
           }
         );
 
+        // Should be removed from mergeList after merged
+        mergeList.delete('1');
         expect(trigger).toHaveBeenLastCalledWith({
           mergeDisabled: false,
           mergeList,
@@ -502,6 +514,10 @@ describe('Grouping Store', function() {
     });
 
     describe('onUnmerge', function() {
+      beforeAll(function() {
+        GroupingStore.init();
+      });
+
       beforeEach(function() {
         Client.clearMockResponses();
         Client.addMockResponse({
@@ -511,28 +527,40 @@ describe('Grouping Store', function() {
       });
       afterEach(function() {});
 
-      it('disables rows to be merged', function() {
-        GroupingStore.onToggleUnmerge('1');
-        unmergeList.add('1');
-        unmergeState.set('1', {checked: true, busy: false});
+      it('disables rows to be merged', async function() {
+        GroupingStore.onToggleUnmerge('2');
+        unmergeList.add('2');
 
         trigger.mockClear();
-        GroupingStore.onUnmerge({
+
+        let promise = GroupingStore.onUnmerge({
           groupId: 'groupId'
         });
 
-        expect(trigger).toHaveBeenCalledWith({
+        unmergeState.set('2', {checked: false, busy: true});
+        expect(trigger).toHaveBeenLastCalledWith({
           unmergeCollapseState,
           unmergeDisabled: true,
+          unmergeList,
+          unmergeState
+        });
+
+        await promise;
+
+        unmergeState.set('2', {checked: false, busy: true});
+        unmergeList.delete('2');
+        expect(trigger).toHaveBeenLastCalledWith({
+          unmergeCollapseState,
+          unmergeDisabled: false,
           unmergeList,
           unmergeState
         });
       });
 
       it('keeps rows in "busy" state and unchecks after successfully adding to unmerge queue', async function() {
-        GroupingStore.onToggleUnmerge('1');
-        unmergeList.add('1');
-        unmergeState.set('1', {checked: true, busy: false});
+        GroupingStore.onToggleUnmerge('2');
+        unmergeList.add('2');
+        unmergeState.set('2', {checked: true, busy: false});
 
         let promise = GroupingStore.onUnmerge({
           groupId: 'groupId'
@@ -565,8 +593,8 @@ describe('Grouping Store', function() {
         });
 
         GroupingStore.onToggleUnmerge('2');
-        unmergeList.add('1');
-        unmergeState.set('1', {checked: true, busy: false});
+        unmergeList.add('2');
+        unmergeState.set('2', {checked: true, busy: false});
 
         let promise = GroupingStore.onUnmerge({
           groupId: 'groupId'
