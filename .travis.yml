@@ -25,7 +25,7 @@ env:
     - PIP_DISABLE_PIP_VERSION_CHECK=on
     - SENTRY_LIGHT_BUILD=1
     - SENTRY_SKIP_BACKEND_VALIDATION=1
-    - TRAVIS_NODE_VERSION=4
+    - TRAVIS_NODE_VERSION=8.4
     - CXX=g++-4.8
 before_install:
   - bin/update-zeus-job in_progress unknown || echo "failed to report build to Zeus; continuing"
