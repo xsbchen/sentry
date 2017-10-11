@@ -241,6 +241,8 @@ def truncate_denormalizations(group):
     tagstore.delete_all_group_tag_keys(group.id)
     tagstore.delete_all_group_tag_values(group.id)
 
+    # TODO: Support environments
+
     GroupRelease.objects.filter(
         group_id=group.id,
     ).delete()
@@ -377,6 +379,8 @@ def get_event_user_from_interface(value):
 
 
 def collect_tsdb_data(caches, project, events):
+    # TODO: Support environments
+
     counters = defaultdict(
         lambda: defaultdict(
             lambda: defaultdict(int),
