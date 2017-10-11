@@ -593,9 +593,31 @@ class EventManagerTest(TransactionTestCase):
         }
 
         assert tsdb.get_most_frequent(
+            tsdb.models.frequent_issues_by_project,
+            (event.project.id, ),
+            event.datetime,
+            environment_id=event.environment.id,
+        ) == {
+            event.project.id: [
+                (event.group_id, 1.0),
+            ],
+        }
+
+        assert tsdb.get_most_frequent(
             tsdb.models.frequent_projects_by_organization,
             (event.project.organization_id, ),
             event.datetime,
+        ) == {
+            event.project.organization_id: [
+                (event.project_id, 1.0),
+            ],
+        }
+
+        assert tsdb.get_most_frequent(
+            tsdb.models.frequent_projects_by_organization,
+            (event.project.organization_id, ),
+            event.datetime,
+            environment_id=event.environment.id,
         ) == {
             event.project.organization_id: [
                 (event.project_id, 1.0),
@@ -620,10 +642,30 @@ class EventManagerTest(TransactionTestCase):
         }
 
         assert tsdb.get_distinct_counts_totals(
+            tsdb.models.users_affected_by_group,
+            (event.group.id, ),
+            event.datetime,
+            event.datetime,
+            environment_id=event.environment.id,
+        ) == {
+            event.group.id: 1,
+        }
+
+        assert tsdb.get_distinct_counts_totals(
             tsdb.models.users_affected_by_project,
             (event.project.id, ),
             event.datetime,
             event.datetime,
+        ) == {
+            event.project.id: 1,
+        }
+
+        assert tsdb.get_distinct_counts_totals(
+            tsdb.models.users_affected_by_project,
+            (event.project.id, ),
+            event.datetime,
+            event.datetime,
+            environment_id=event.environment.id,
         ) == {
             event.project.id: 1,
         }
