@@ -119,6 +119,8 @@ def merge_group(
 
     features.merge(new_group, [group], allow_unsafe=True)
 
+    # TODO: Support environments
+
     for model in [tsdb.models.group]:
         tsdb.merge(model, new_group.id, [group.id])
 
