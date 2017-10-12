@@ -241,25 +241,27 @@ def truncate_denormalizations(group):
     tagstore.delete_all_group_tag_keys(group.id)
     tagstore.delete_all_group_tag_values(group.id)
 
-    # TODO: Support environments
-
     GroupRelease.objects.filter(
         group_id=group.id,
     ).delete()
 
+    environment_ids = Environment.objects.filter(
+        projects=group.project).values_list(
+        'id', flat=True)
+
     tsdb.delete([
         tsdb.models.group,
-    ], [group.id])
+    ], [group.id], environment_ids=environment_ids)
 
     tsdb.delete_distinct_counts([
         tsdb.models.users_affected_by_group,
-    ], [group.id])
+    ], [group.id], environment_ids=environment_ids)
 
     tsdb.delete_frequencies(
         [
             tsdb.models.frequent_releases_by_group,
             tsdb.models.frequent_environments_by_group,
-        ], [group.id]
+        ], [group.id], environment_ids=environment_ids,
     )
 
     features.delete(group)
