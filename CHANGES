@@ -5,6 +5,7 @@ Version 8.22 (Unreleased)
   default organization. You should use SSO or the invite flows.
 - Add support for SAML2 authentication through identity providers that
   implement the ``SAML2AuthProvider``. See getsentry/sentry-auth-saml2.
+- Added the ability for users to disable workflow notifications on a per-project basis.
 
 Schema Changes
 ~~~~~~~~~~~~~~
@@ -342,7 +343,6 @@ Version 8.12
 - Fixed usage (and propagation) of ``Group.first_release``.
 - The + and - datetime search helpers now work with ranges (e.g. ``<=``).
 - Added the ability to download artifacts from releases.
-- Added the ability for users to disable workflow notifications on a per-project basis.
 
 SDKs
 ~~~~
